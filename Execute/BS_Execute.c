@@ -1,51 +1,48 @@
 #pragma once
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
 #include "BS_Lib.h"
 
-int nestedExpected = 0;
+static int opcode;
 
-// CALL_FUNC
-// thrid
-void funcCall()
-{
+char** tk;
 
-}
-// second 
-void argParse(char* args)
+void callFunc(char* args)
 {
-	return;
-}
+	char* tmpStr;
+	char buf = 0;
+	int len = charFreq(args, ',') + 1;
+	int tmpVal;
+	int type;
 
-// tech first
-int checker()
-{
-	if (*inIf == true)
+
+
+	tk = str_split(args, ',');
+	for(int i = 0; i < len; i++)
 	{
-		if (nestedExpected == 0)
-			nestedExpected = 1;
+		tmpStr = *(tk + i);
+		type = argLen(tmpStr, BS_TYPE_B1, BS_TYPE_B2);
+		//printf("%s\n", tmpStr);		
+		for(int j = 0; j < argLen(tmpStr, BS_ARG_LEN, BS_ARG_LEN1) * 2; j++)
+		{
+			if (j % 2 != 0)
+			{
+				tmpVal = hex_to_ascii(buf, tmpStr[j + 4]);
+				//printf("%c\n", tmpVal);
+				//printf("%i\n", tmpVal);
+			}
+			else if (j % 2 == 0)
+				buf = tmpStr[j+4];
+		}
 	}
-	else
-		nestedExpected = 0;
+
+
+	free(tk);
 }
 
-// first 
-void load_func(int* opCode)
+void funcsetup(int opCode)
 {
-	checker();
-	switch (*opCode)
-	{
-		case 1:
-			break;
-
-		case 2:
-			break;
-
-		case 3:
-			break;
-
-		case 4:
-			break;
-
-
-	}
+	opcode = opCode;
 }

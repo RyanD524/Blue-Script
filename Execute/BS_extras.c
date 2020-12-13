@@ -2,6 +2,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include "BS_Lib.h"
 
 int inList(int val, int* arr, int len)
 {
@@ -13,26 +15,32 @@ int inList(int val, int* arr, int len)
 	return 0;
 }
 
-
-/*int hash(const char *str)
+char* ChangeNS(char* arg)
 {
-	int result = 0x55555555;;
+	int inName = 0;
+	int hasName = 0;
+	char* returnVal = "";
+	char buf = 0;
+	char tmp;
+	int len = argLen(arg,BS_ARG_LEN,BS_ARG_LEN1);
+	//printf("%i\n", argLen(arg));
 
-	while (*str)
+	for (int i = 0; i < sizeof(arg); i++)
 	{
-		result ^= *str++;
-		result = rol(result, 5);
+		if(arg[i] == '\'' && hasName == 0)
+		{
+			if (inName == 0)
+				inName = 1;
+			else
+				hasName = 0;
+		}
+
+		else if (arg[i] != '\'' && inName == 1)
+		{
+			tmp = arg[i];
+			returnVal = append(returnVal, tmp);
+		}
+
 	}
-
-	return result;
-}*/
-
-
-int isLocalVar(char* str)
-{
-	/*
-		Check if a string is a key anywhere
-		and if it is a var
-	*/
-	return 0;
+	return returnVal;
 }

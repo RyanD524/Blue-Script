@@ -1,6 +1,6 @@
 NAMESPACE-h
-CALL_FUNC:2~args:[('hello world', 'string')]~nest:False
+CALL_FUNC:2~args:02132268656c6c6f20776f726c6422~nest:False
 NAMESPACE-main
-CALL_FUNC:2~args:[('hello', 'string')]~nest:False
-CALL_FUNC:3~args:[('+', 'math_op'), ('a', 'var'), (10, 'int'), (2, 'int')]~nest:False
-CALL_EXTERN:7~args:[('h', 'func')]~nest:False
+CALL_FUNC:2~args:02072268656c6c6f22~nest:False
+CALL_FUNC:3~args:05012b,040161,00023130,000132~nest:False
+CALL_FUNC:7~args:060168~nest:False

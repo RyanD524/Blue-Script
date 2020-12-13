@@ -35,7 +35,18 @@ class BS_opcode:
 	def str2bool(self, v):
 		return str(v).lower() in ('true', 'false')
 
+	def strToHex(self, string):
+		returnString = ""
+		for i in string:
+			returnString += hex(ord(i))
+
+		return returnString.replace("0x", "")
+
 	def getType(self, item):
+		BS_return = ""
+		BS_Type = ""
+		BS_Len = ""
+		is_set = False
 		if item.startswith(" "):
 			item = item[1:]
 		if item.endswith(" "):
@@ -43,36 +54,56 @@ class BS_opcode:
 			
 
 		numReturn = self.isNumber(item)
+		tmpLen = len(item)
+		BS_name = self.strToHex(item)
+		if len(str(tmpLen)) == 1:
+			BS_Len = "0" + str(tmpLen)
+		else:
+			BS_Len = str(tmpLen)
 
-		if numReturn != "2":
+		if numReturn != "2" :
 			if numReturn == "1":
-				return ((int(item), "int"))
+				BS_Type = "00"
+				is_set = True
+				#return((int(item), 0))
 			elif numReturn == "0":
-				return ((float(item), "float"))
+				BS_Type = "01"
+				is_set = True
+				#return ((float(item), 1))
 
 		if item.startswith('"') and item.endswith('"'):
 			item = item.replace('"', "")
-			return ((item,"string"))
+			BS_Type = "02"
+			is_set = True
 
 		elif self.str2bool(item):
-			return ((item, "bool"))
+			BS_Type = "03"
+			is_set = True
 
-		elif self.OpCode == 1 or self.OpCode == 3:
+		elif self.OpCode == 1 or self.OpCode == 3 and is_set == False:
 			varkeys.append(item)
-			return ((item, "var"))
+			BS_Type = "04"
+			is_set = True
 		elif item in opers:
-			return ((item, "oper"))
+			BS_Type = "05"
+			is_set = True
 		elif item in varkeys:
-			return ((item, "var"))
+			BS_Type = "04"
+			is_set = True
 
 		elif item in namespaces or item.endswith(".blf"):
-			return ((item, "func"))
+			BS_Type = "06"
+			is_set = True
 
-		else:
+		elif is_set == False:
 			raise Exception("BS ERROR 0020 Incorrect Type declaration")
+
+		returnString = f"{BS_Type}{BS_Len}{BS_name}"
+		return returnString
 
 	def incorrectSyntax(self):
 		raise Exception(f"BS ERROR 0001 Incorrect Syntax -> Line {self.lineno} in namespace '{self.n_space}'")
+	
 	def getOpCode(self):
 		nested = False
 		logicMode = None
@@ -84,6 +115,7 @@ class BS_opcode:
 		self.OpCode = tokens.tokens.get(self.cmdText[0], "ip")#self.incorrectSyntax())
 		
 		if len(self.cmdText) >= 1:
+			endStr = ""
 			argSpec = []
 			fin = []
 			self.args = self.cmdText[1]
@@ -97,7 +129,11 @@ class BS_opcode:
 						tmp = argSpec[1].split(ops[0])
 						argSpec.remove(argSpec[1])
 						argSpec += tmp
-					fin.append(((ops[0], "math_op")))
+
+					endStr = "0501"
+					evl = self.strToHex(ops[0])
+					endStr = f"{endStr}{evl}{evl}"
+					#math ops					
 				else:
 					argSpec.append(self.args)
 			else:
@@ -105,8 +141,14 @@ class BS_opcode:
 					if item in self.args:
 						argSpec = self.args.split(item)
 						logicMode = item
-
-				fin.append(((logicMode, "logicOp")))
+					tmp = self.strToHex(logicMode)
+					endStr = "07"
+					tmpLen = str(len(logicMode))
+					if len(tmpLen) == 1:
+						tmpLen = "0" + tmpLen
+					endStr = f"{endStr}{tmpLen}{tmp}"
+				## logic ops
+			fin.append(endStr)
 
 
 			for item in argSpec:
@@ -115,8 +157,15 @@ class BS_opcode:
 		else:
 			fin.append("NULL")
 
-			
-		return {"cmd": self.OpCode, "args": fin,"nested": nested, "argRange": len(fin) if fin[0] != "NULL" else None }
+		if len(fin[0]) == 0:
+			del fin[0]
+		tmpRemove = ["[", "]", " ", "'"]
+		clean_fin = str(fin)
+
+		for item in tmpRemove:
+			clean_fin = clean_fin.replace(item, "")
+
+		return {"cmd": self.OpCode, "args": clean_fin,"nested": nested, "argRange": len(fin) if fin[0] != "NULL" else None }
 
 
 

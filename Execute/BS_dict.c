@@ -1,65 +1,55 @@
 #pragma once
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
+struct nlist { /* table entry: */
+    struct nlist *next; /* next entry in chain */
+    char *name; /* defined name */
+    char *defn; /* replacement text */
+};
 
-typedef struct dict_t_struct {
-    char *key;
-    void *value;
-    struct dict_t_struct *next;
-} dict_t;
+#define HASHSIZE 101
+static struct nlist *hashtab[HASHSIZE]; /* pointer table */
 
-dict_t **dictAlloc(void) {
-    return malloc(sizeof(dict_t));
+/* hash: form hash value for string s */
+unsigned hash(char *s)
+{
+    unsigned hashval;
+    for (hashval = 0; *s != '\0'; s++)
+      hashval = *s + 31 * hashval;
+    return hashval % HASHSIZE;
 }
 
-void dictDealloc(dict_t **dict) {
-    free(dict);
+/* lookup: look for s in hashtab */
+struct nlist *lookup(char *s)
+{
+    struct nlist *np;
+    for (np = hashtab[hash(s)]; np != NULL; np = np->next)
+        if (strcmp(s, np->name) == 0)
+          return np; /* found */
+    return NULL; /* not found */
 }
 
-void *getItem(dict_t *dict, char *key) {
-    dict_t *ptr;
-    for (ptr = dict; ptr != NULL; ptr = ptr->next) {
-        if (strcmp(ptr->key, key) == 0) {
-            return ptr->value;
-        }
-    }
-    
-    return NULL;
+char *strdup(char *);
+/* install: put (name, defn) in hashtab */
+struct nlist *install(char *name, char *defn)
+{
+    struct nlist *np;
+    unsigned hashval;
+    if ((np = lookup(name)) == NULL) { /* not found */
+        np = (struct nlist *) malloc(sizeof(*np));
+        if (np == NULL || (np->name = strdup(name)) == NULL)
+          return NULL;
+        hashval = hash(name);
+        np->next = hashtab[hashval];
+        hashtab[hashval] = np;
+    } else /* already there */
+        free((void *) np->defn); /*free previous defn */
+    if ((np->defn = strdup(defn)) == NULL)
+       return NULL;
+    return np;
 }
 
-void delItem(dict_t **dict, char *key) {
-    dict_t *ptr, *prev;
-    for (ptr = *dict, prev = NULL; ptr != NULL; prev = ptr, ptr = ptr->next) {
-        if (strcmp(ptr->key, key) == 0) {
-            if (ptr->next != NULL) {
-                if (prev == NULL) {
-                    *dict = ptr->next;
-                } else {
-                    prev->next = ptr->next;
-                }
-            } else if (prev != NULL) {
-                prev->next = NULL;
-            } else {
-                *dict = NULL;
-            }
-            
-            free(ptr->key);
-            free(ptr);
-            
-            return;
-        }
-    }
-}
-
-void addItem(dict_t **dict, char *key, void *value) {
-    delItem(dict, key); /* If we already have a item with this key, delete it. */
-    dict_t *d = malloc(sizeof(struct dict_t_struct));
-    d->key = malloc(strlen(key)+1);
-    strcpy(d->key, key);
-    d->value = value;
-    d->next = *dict;
-    *dict = d;
-}
+char *strdup(char *s) /* make a duplicate of s */
+{
+    char *

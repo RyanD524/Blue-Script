@@ -1,7 +1,12 @@
 #include <stdio.h>
 #include <string.h>
 #include "BS_Lib.h"
-
+/*¯\_(ツ)_/¯*/
+// ^^ Here for "professionalism" 
+/*
+	Notes: HEX -> ASCII
+	not working yet 
+*/
 int main(int argc, char *argv[]){
 	
 	if (argc < 2)

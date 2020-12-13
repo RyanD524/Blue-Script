@@ -6,18 +6,69 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <assert.h>
+#include "BS_Lib.h"
 
-char* hexlify(char* string)
+#define MIN_STR_LEN 1 
+#define MAX_STR_LEN 99
+#define NUM_STR 200
+#define ERR_MESSAGE__NO_MEM "Not enough memory!"
+#define allocator(element, type) _allocator(element, sizeof(type))
+
+int len(char* str) { return strlen(str); }
+/** Allocator function (safe alloc) */
+void *_allocator(size_t element, size_t typeSize)
 {
-	char* hex;
-	for(int i = 0; i < strlen(string); i++)
+    void *ptr = NULL;
+    /* check alloc */
+    if( (ptr = calloc(element, typeSize)) == NULL)
+    {printf(ERR_MESSAGE__NO_MEM); exit(1);}
+    /* return pointer */
+    return ptr;
+}
+
+
+int argLen(char* str, int index1, int index2)
+{
+	int endNum = 0;
+	char num1 = str[index1];
+	char num2 = str[index2];
+	if (num1 != '0')
+		endNum = (int)num1 * 10 - 48;
+	endNum += (int)num2 - 48;
+
+	return endNum;
+}
+
+char* strmov(char* str)
+{
+	int i;
+	char buf = 0;
+	for (i = 0; i < len(str); i++)
 	{
-		char temp[5];
-		sprintf(temp, "%X", word[i]);
-		strcat(hex,temp);
+		if(i % 2 != 0)
+			printf("%c\n", hex_to_ascii(buf, str[i]));
+		else
+			buf = str[i];
 	}
 
-	return hex;
+}
+
+void hexlify(char* input, char* output)
+{
+    int loop;
+    int i; 
+    
+    i=0;
+    loop=0;
+    
+    while(input[loop] != '\0')
+    {
+        sprintf((char*)(output+i),"%02X", input[loop]);
+        loop+=1;
+        i+=2;
+    }
+    //insert NULL at the end of the output string
+    output[i++] = '\0';
 }
 
 char* stripTrail(char* a_str, size_t ln)
@@ -28,13 +79,47 @@ char* stripTrail(char* a_str, size_t ln)
 	return a_str;
 }
 
+char* append(const char* str, const char c)
+{
+	char* newString, *ptr;
+	newString = allocator((strlen(str) + 2), char);
+	ptr = newString;
+
+	for(; *str; str++) {*ptr = *str; ptr++;}
+
+		*ptr = c;
+
+	return newString;
+
+}
+
+bool compair(char* str, char* str2)
+{
+	for(int i = 0; i < strlen(str); i++)
+	{
+		if(str[i] != str2[i])
+			return false;
+	}
+	return true;
+}
+
 bool startsWith(const char* a_str, const char* delim)
 {
-	for (size_t i = 0; delim[i] != '\0'; i++){
+	for (int i = 0; delim[i] != '\0'; i++){
 		if (a_str[i] != delim[i])
 			return false;
 	}
 	return true;
+}
+
+bool contains(char* string, char delim)
+{
+	for (int i = 0; i < strlen(string); i++)
+	{
+		if (string[i] == delim)
+			return true;
+	}
+	return false;
 }
 
 int charFreq(char* string, char lookfor)
@@ -73,7 +158,8 @@ int isInt(char* a_str)
 		return 0;
 }
 
-int endsWith (char *str, char *end) {
+int endsWith (char *str, char *end) 
+{
     size_t slen = strlen (str);
     size_t elen = strlen (end);
     if (slen < elen)
@@ -85,9 +171,11 @@ char** str_split(char* a_str, const char a_delim)
 {
 	char** result = 0;
 	size_t count = 0;
+	size_t idx = 0;
 	char* tmp = a_str;
 	char* last_delm = 0;
 	char delim[2];
+	
 	delim[0] = a_delim;
 	delim[1] = 0;
 
@@ -108,7 +196,6 @@ char** str_split(char* a_str, const char a_delim)
 
 	if (result)
 	{
-		size_t idx = 0;
 		char* token = strtok(a_str, delim);
 
 		while (token)
@@ -118,9 +205,11 @@ char** str_split(char* a_str, const char a_delim)
 			token = strtok(0, delim);
 		}
 
-		assert(idx == count - 1);
-		*(result + idx) = 0;
+		if(idx >= MIN_STR_LEN)
+		{
+			assert(idx == count - 1);
+			*(result + idx) = 0;
+			return result;
+		}
 	}
-
-	return result;
 }

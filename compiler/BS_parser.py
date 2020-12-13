@@ -4,11 +4,10 @@ import os
 cgen_Guide = { 
 	"NULL"       : [0],
 	"SAVE_VAR"   : [1],
-	"CALL_FUNC"  : [2,3],
+	"CALL_FUNC"  : [2,3,7],
 	"LOGIC_START": [4],
 	"LOGIC_END"  : [5],
 	"JUMP_TO"    : [11],
-	"CALL_EXTERN": [7],
 	"RETURN_VAL" : [9],
 	"ARRAY"      : [6],
 	"INCLUDE_EXT": [10]
